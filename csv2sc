@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+# convert CSV files into the format that `sc' uses
+# adapted from https://www.linuxjournal.com/article/10699
+
+import sys
+import string
+
+argv = sys.argv
+argc = len(sys.argv)
+
+if argc < 2:
+    print("Usage: %s infile [outfile] [delimiter]" % argv[0])
+    sys.exit(1)
+  
+fname_in = argv[1]
+ 
+if argc > 2:
+    fname_out = argv[2]
+    outfile = open(fname_out, 'w')
+    print("Output will be saved in %s" % fname_out)
+else:
+    outfile = sys.stdout
+  
+delim = ','
+if argc == 4: delim = argv[3][0]
+print("Using delimiter %c" % delim)
+
+letters = string.ascii_uppercase
+text = []
+row = 0
+for line in infile.readlines():
+    allp = line.rstrip().split(delim)
+    if len(allp) > 25:
+        print("Too many columns!") # not sure why this limitation exists in the original file, don't care to try and fix
+        sys.exit(2)
+    column = 0
+    for p in allp:
+        col = letters[column]
+        column += 1
+        if len(p) == 0: continue
+        try:
+            n = float(p) # might need to be something else? not all numbers are floats
+            text.append('let %c%d = %d' % (col, row, n))
+        except:
+            if p[0] == '"':
+                text.append('label %c%d = %s' % (col, row, p))
+        else:
+            text.append('label %c%d = "%s"' % (col, row, p.strip()))
+    row += 1
+  
+infile.close()
+outfile.write("\n".join(text))
+outfile.write("\n")
+if outfile != sys.stdout: outfile.close()
