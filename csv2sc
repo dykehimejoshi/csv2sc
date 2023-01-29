@@ -26,6 +26,8 @@ delim = ','
 if argc == 4: delim = argv[3][0]
 print("Using delimiter %c" % delim)
 
+infile = open(fname_in, 'r')
+
 letters = string.ascii_uppercase
 text = []
 row = 0
